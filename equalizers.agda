@@ -19,6 +19,8 @@ postulate -- this is like a meta-theoretic for all if you get me
   g : A -> B
 
 
+-- i start by constructing equalizers in type theory (up to extensionality)
+
 equal-func : A -> Set n
 equal-func x = f x == g x
 
@@ -41,6 +43,8 @@ E-universal : {X : Set n} {h : X -> A} -> (commutes X h) -> X -> E
 E-universal {X} {h} comm x = ( h(x) , comm x )
 
 -- hehe nice :)
+
+-- below here is the attmept at coequalizers / quotient types
 
 relation : {a : Level} -> Set a -> Set (lsuc a)
 relation {a} A = A -> A -> Set a
