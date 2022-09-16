@@ -143,4 +143,13 @@ postulate
   mod2trans : {a b c : N} -> a mod2 b -> b mod2 c -> a mod2 c
 
 
+-- I need integers to do ftom2 
 
+_x2 : N -> N
+(Z x2) = Z
+((S n) x2) = S (S (n x2))
+
+-- data ftom2 : Set -> Set where
+--   ftom2 : {a b : N} -> Sigma N ((== a - b) . x2) -- if you get what i'm saying
+
+-- cause then irrelveance becomes irr (ftom2 (n , refl)) (ftom2 (n , refl)) = refl  -- uses K but still
