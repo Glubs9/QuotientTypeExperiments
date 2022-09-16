@@ -52,7 +52,7 @@ relation {a} A = A -> A -> Set a
 
 record Equivalence {a} {A : Set a} (_R_ : relation A) : Set a where
   field
-    reflexivity : {x : A} -> x R x
+    reflexivity : (x : A) -> x R x
     symmetry : {x y : A} -> x R y -> y R x
     transitivity : {x y z : A} -> x R y -> y R z -> x R z
     irrelevance : {x y : A} {p1 p2 : x R y} -> p1 == p2 -- has to be proof irrelevant (this solves everything :)
@@ -101,4 +101,46 @@ postulate
 -- because this only works with the extra proofs or something?
 k : {a : A} -> (quot a) -> C
 k {a} _ = h(a)
+
+
+-- examples of quotients to show that it's practical to some extent
+
+-- modulus 2
+
+data N : Set where
+  Z : N
+  S : N -> N
+
+-- bad names here
+-- also this definiitions doesnt work
+data _mod2_ : N -> N -> Set where
+  baseZ : Z mod2 Z
+  baseSZ : (S Z) mod2 (S Z)
+  stepL : {a b : N} -> a mod2 b -> (S (S a)) mod2 b
+  stepR : {a b : N} -> a mod2 b -> a mod2 (S (S b))
+
+postulate
+  mod2irr : {a b : N} -> (p1 : a mod2 b) -> (p2 : a mod2 b) -> p1 == p2
+  -- not sure how to do this 
+  -- maybe this is where HITs are necersarry
+  -- I want to put this in definition for mod2 but it wont let me
+
+-- proofs of reflexivity, symmetry, transitivity
+mod2refl : (a : N) -> a mod2 a
+mod2refl Z = baseZ
+mod2refl (S Z) = baseSZ
+mod2refl (S (S n)) = stepR (stepL (mod2refl n))
+
+mod2symm : {a b : N} -> a mod2 b -> b mod2 a
+mod2symm baseZ = baseZ
+mod2symm baseSZ = baseSZ
+mod2symm (stepL prf) = stepR (mod2symm prf)
+mod2symm (stepR prf) = stepL (mod2symm prf)
+
+-- mod2trans is gonna be really annoying to write so I will hold off for now
+-- but it should be obvious (maybe prove ftom which makes this way easier)
+postulate
+  mod2trans : {a b c : N} -> a mod2 b -> b mod2 c -> a mod2 c
+
+
 
