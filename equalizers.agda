@@ -7,6 +7,14 @@ open import Agda.Primitive
 data _==_ {n : Level} {A : Set n} : A -> A -> Set n where
   refl : {x : A} -> x == x
   
+-- relies on K
+eq-symm : {n : Level} {A : Set n} {a b : A} -> a == b -> b == a
+eq-symm refl = refl
+
+-- K again
+eq-trans : {n : Level} {A : Set n} {a b c : A} -> a == b -> b == c -> a == c
+eq-trans refl refl = refl
+
 
 data Sigma {n : Level} (A : Set n) (B : A -> Set n) : Set n where
   _,_ : (a : A) -> B a -> Sigma A B
@@ -55,7 +63,7 @@ record Equivalence {a} {A : Set a} (_R_ : relation A) : Set a where
     reflexivity : (x : A) -> x R x
     symmetry : {x y : A} -> x R y -> y R x
     transitivity : {x y z : A} -> x R y -> y R z -> x R z
-    irrelevance : {x y : A} {p1 p2 : x R y} -> p1 == p2 -- has to be proof irrelevant (this solves everything :)
+    irrelevance : {x y : A} -> (p1 p2 : x R y) -> p1 == p2 -- has to be proof irrelevant (this solves everything :)
 
 open Equivalence {{...}} public
 
@@ -105,11 +113,55 @@ k {a} _ = h(a)
 
 -- examples of quotients to show that it's practical to some extent
 
--- modulus 2
 
 data N : Set where
   Z : N
   S : N -> N
+
+-- integers
+
+_+_ : N -> N -> N
+Z + y = y
+(S x) + y = S (x + y)
+
+postulate
+  addsym : {a b : N} -> (a + b) == (b + a) -- already proven
+
+data Int : Set where
+  _-_ : N -> N -> Int
+
+negativeFour : Int
+negativeFour = (S (S (S (S (S (S Z)))))) - (S (S Z))
+
+-- int equiv
+data _ieq_ : Int -> Int -> Set where
+  addprf : {a b c d : N} -> (a + d) == (c + b) -> (a - b) ieq (c - d)
+
+ieqrefl : (x : Int) -> x ieq x
+ieqrefl (a - b) = addprf refl
+
+ieqsymm : {x y : Int} -> x ieq y -> y ieq x
+ieqsymm (addprf prf) = addprf (eq-symm prf)
+
+ieqtrans : {x y z : Int} -> x ieq y -> y ieq z -> x ieq z
+ieqtrans (addprf prf1) (addprf prf2) = addprf {!!} -- bit tired rn but this is pre obv
+
+-- leaving eq-irr here for easier reference
+eq-irr : {A : Set} {x y : A} -> (p1 : x == y) -> (p2 : x == y) -> p1 == p2
+eq-irr refl refl = refl
+
+ieqirr : {x y : Int} -> (p1 : x ieq y) -> (p2 : x ieq y) -> p1 == p2
+ieqirr (addprf prf1) (addprf prf2) = {!!}  -- it won't let me pattern match refl here?? but this should be right??
+
+instance
+  ieqEquivalence : Equivalence _ieq_
+  ieqEquivalence = record { reflexivity = ieqrefl; symmetry = ieqsymm; transitivity = ieqtrans; irrelevance = ieqirr}
+
+-- similar construction to previous _R_ construction
+quotInt : Int -> Set
+quotInt x = Sigma Int (_ieq_ x)
+
+-- modulus 2 (not working)
 
 -- bad names here
 -- also this definiitions doesnt work
