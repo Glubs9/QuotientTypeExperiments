@@ -77,7 +77,6 @@ fst {x} _ = x
 snd : {x y : A} -> x R y -> A
 snd {x} {y} _ = y
 
--- this is fR
 quot : A -> Set n
 quot a = Sigma A (_R_ a) -- is Sigma (b : A) (a R b) roughly
 
@@ -104,7 +103,7 @@ postulate
   h : A -> C
   -- h-commutes : ?
 
--- universal property holds? hehe
+-- universal property holds?
 -- this might be a bad thing actually
 -- because this only works with the extra proofs or something?
 k : {a : A} -> (quot a) -> C
@@ -143,8 +142,16 @@ ieqrefl (a - b) = addprf refl
 ieqsymm : {x y : Int} -> x ieq y -> y ieq x
 ieqsymm (addprf prf) = addprf (eq-symm prf)
 
+cancel-add : {a b c : N} -> (c + a) == (c + b) -> a == b
+-- cancel-add {a} {b} {Z} refl = refl -- what???? error here??
+cancel-add {a} {b} {Z} prf = prf
+cancel-add {a} {b} {S c} prf = cancel-add (succ-pred prf)
+  where succ-pred : {a b : N} -> S a == S b -> a == b
+        succ-pred refl = refl
+
 ieqtrans : {x y z : Int} -> x ieq y -> y ieq z -> x ieq z
 ieqtrans (addprf prf1) (addprf prf2) = addprf {!!} -- bit tired rn but this is pre obv
+         -- no idea how to prove this :(
 
 -- leaving eq-irr here for easier reference
 eq-irr : {A : Set} {x y : A} -> (p1 : x == y) -> (p2 : x == y) -> p1 == p2
@@ -160,6 +167,13 @@ instance
 -- similar construction to previous _R_ construction
 quotInt : Int -> Set
 quotInt x = Sigma Int (_ieq_ x)
+
+
+-- IGNORE BELOW THIS LINE,
+-- below here was my attempt at building quotients over modulus, but I
+-- realized I needed ints. Then I was like "why not just do ints?, they're
+-- technically defined as an equivalence class normally, and it's probably easier than mod"
+
 
 -- modulus 2 (not working)
 
