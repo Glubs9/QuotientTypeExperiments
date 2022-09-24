@@ -1,24 +1,10 @@
--- questions
-  -- why can't we use a similar construction to this, why isn't it "good enough" to at least prove things up to isomorphism
-            -- why do we need equality at all? if isomorhpism is substitutive then why can't we just use that?
-
 open import Agda.Primitive
 
 data _==_ {n : Level} {A : Set n} : A -> A -> Set n where
   refl : {x : A} -> x == x
   
--- relies on K
-eq-symm : {n : Level} {A : Set n} {a b : A} -> a == b -> b == a
-eq-symm refl = refl
-
--- K again
-eq-trans : {n : Level} {A : Set n} {a b c : A} -> a == b -> b == c -> a == c
-eq-trans refl refl = refl
-
-
 data Sigma {n : Level} (A : Set n) (B : A -> Set n) : Set n where
   _,_ : (a : A) -> B a -> Sigma A B
-
 
 postulate -- this is like a meta-theoretic for all if you get me
   n : Level
@@ -40,8 +26,6 @@ i : E -> A
 i (x , prf) = x
 
 
--- ext :( , not sure how to fix? (this is caused by my definition of E not being not extensional)
--- maybe make use of axiom k or something???
 commutes : (X : Set n) (h : X -> A) -> Set n
 commutes X h = (x : X) -> f (h x) == g (h x)
 
@@ -53,7 +37,10 @@ E-universal {X} {h} comm x = ( h(x) , comm x )
 
 -- hehe nice :)
 
--- below here is the attmept at coequalizers / quotient types
+
+------------------------------------------------------------------
+-- below here is the attempt at coequalizers / quotient types ----
+------------------------------------------------------------------
 
 relation : {a : Level} -> Set a -> Set (lsuc a)
 relation {a} A = A -> A -> Set a
@@ -63,7 +50,7 @@ record Equivalence {a} {A : Set a} (_R_ : relation A) : Set a where
     reflexivity : (x : A) -> x R x
     symmetry : {x y : A} -> x R y -> y R x
     transitivity : {x y z : A} -> x R y -> y R z -> x R z
-    irrelevance : {x y : A} -> (p1 p2 : x R y) -> p1 == p2 -- has to be proof irrelevant (this solves everything :)
+    irrelevance : {x y : A} -> (p1 p2 : x R y) -> p1 == p2 -- has to be proof irrelevant
 
 open Equivalence {{...}} public
 
@@ -87,6 +74,11 @@ co-eq-subt1 {a} {b} {p} (x , prf) = (x , symmetry (transitivity (symmetry prf) p
 co-eq-subt2 : {{_ : Equivalence _R_}} {a b : A} {p : a R b} -> quot (snd p) -> quot (fst p)
 co-eq-subt2 {a} {b} {p} (x , prf) = (x , transitivity p prf)
 
+-- I think this is the heart of the problem as to why I can't get the iso proof done?
+-- this errors as b1 and b2 are not the same type (also ik that Sigma a1 b1 doesn't type check but you get my point)
+-- pair-eq : {n : Level} {A : Set n} {B : A -> Set n} {a1 a2 : A} {b1 : B a1} {b2 : B a2} -> a1 == a2 -> b1 == b2 -> (Sigma a1 b1) == (Sigma a2 b2)
+-- pair-eq refl refl = refl
+ 
 -- in my head the co-eq-subt1 and co-eq-subt2 form the two halves of the subseteq set equality extensionality proofs (consider proof irrelevance)
 -- they aren't literally equal in ITT but close enough to it that it shouldn't matter?
 
@@ -101,11 +93,9 @@ co-eq-subt2 {a} {b} {p} (x , prf) = (x , transitivity p prf)
 postulate
   C : Set n
   h : A -> C
-  -- h-commutes : ?
 
 -- universal property holds?
--- this might be a bad thing actually
--- because this only works with the extra proofs or something?
+-- this might be a bad thing actually, idk
 k : {a : A} -> (quot a) -> C
 k {a} _ = h(a)
 
@@ -136,6 +126,14 @@ negativeFour = (S (S (S (S (S (S Z)))))) - (S (S Z))
 data _ieq_ : Int -> Int -> Set where
   addprf : {a b c d : N} -> (a + d) == (c + b) -> (a - b) ieq (c - d)
 
+-- relies on K
+eq-symm : {n : Level} {A : Set n} {a b : A} -> a == b -> b == a
+eq-symm refl = refl
+
+-- K again
+eq-trans : {n : Level} {A : Set n} {a b c : A} -> a == b -> b == c -> a == c
+eq-trans refl refl = refl
+
 ieqrefl : (x : Int) -> x ieq x
 ieqrefl (a - b) = addprf refl
 
@@ -150,15 +148,15 @@ cancel-add {a} {b} {S c} prf = cancel-add (succ-pred prf)
         succ-pred refl = refl
 
 ieqtrans : {x y z : Int} -> x ieq y -> y ieq z -> x ieq z
-ieqtrans (addprf prf1) (addprf prf2) = addprf {!!} -- bit tired rn but this is pre obv
+ieqtrans (addprf prf1) (addprf prf2) = addprf {!!}
          -- no idea how to prove this :(
+         -- like above, pattern match with refl errors as well
 
--- leaving eq-irr here for easier reference
 eq-irr : {A : Set} {x y : A} -> (p1 : x == y) -> (p2 : x == y) -> p1 == p2
 eq-irr refl refl = refl
 
 ieqirr : {x y : Int} -> (p1 : x ieq y) -> (p2 : x ieq y) -> p1 == p2
-ieqirr (addprf prf1) (addprf prf2) = {!!}  -- it won't let me pattern match refl here?? but this should be right??
+ieqirr (addprf prf1) (addprf prf2) = {!!}  -- it won't let me pattern match refl here as well.
 
 instance
   ieqEquivalence : Equivalence _ieq_
@@ -167,6 +165,9 @@ instance
 -- similar construction to previous _R_ construction
 quotInt : Int -> Set
 quotInt x = Sigma Int (_ieq_ x)
+
+-- and we are done :)
+
 
 
 -- IGNORE BELOW THIS LINE,
